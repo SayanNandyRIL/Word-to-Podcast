@@ -1,0 +1,7 @@
+streamlit
+openai
+wikipedia
+pydub
+pypdf
+pillow
+python-docx
