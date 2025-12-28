@@ -5,3 +5,4 @@ pydub
 pypdf
 pillow
 python-docx
+audioop-lts
