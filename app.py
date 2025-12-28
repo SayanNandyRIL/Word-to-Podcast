@@ -121,9 +121,13 @@ def generate_audio(script_text):
     combined_audio = AudioSegment.empty()
     
     voice_map = {"Rahul": "onyx", "Priya": "nova"}
+    
+    # Track if we actually generated any audio
+    chunks_generated = 0
 
     progress_bar = st.progress(0)
     total_lines = len(lines)
+    status_text = st.empty()
 
     for i, line in enumerate(lines):
         # Regex to find "Name: Text"
@@ -134,6 +138,8 @@ def generate_audio(script_text):
             
             if clean_text:
                 voice = voice_map.get(speaker, "alloy")
+                status_text.text(f"Generating audio for {speaker}...")
+                
                 try:
                     response = client.audio.speech.create(
                         model="tts-1",
@@ -141,20 +147,35 @@ def generate_audio(script_text):
                         input=clean_text
                     )
                     
+                    # Debug: Check if OpenAI returned data
+                    if not response.content:
+                        st.error("OpenAI API returned empty audio content.")
+                        continue
+
+                    # Convert bytes to audio segment
                     audio_chunk = AudioSegment.from_file(BytesIO(response.content), format="mp3")
                     silence = AudioSegment.silent(duration=150) # 150ms pause
                     combined_audio += audio_chunk + silence
+                    chunks_generated += 1
                     
                 except Exception as e:
-                    # st.warning(f"Skipped line: {e}")
-                    pass
+                    # SHOW THE ERROR ON SCREEN
+                    st.error(f"Error generating line {i}: {e}")
+                    # If it's an ffmpeg error, stop immediately to warn user
+                    if "ffmpeg" in str(e).lower() or "file not found" in str(e).lower():
+                        st.error("🚨 CRITICAL ERROR: FFmpeg is missing. Please check packages.txt.")
+                        return None
         
-        # Update progress bar
         if total_lines > 0:
             progress_bar.progress((i + 1) / total_lines)
-
+            
+    status_text.empty()
+    
+    if chunks_generated == 0:
+        st.warning("No audio chunks were generated. Check the errors above.")
+        return None
+        
     return combined_audio
-
 # --- 5. MAIN UI LOGIC ---
 
 source_type = st.radio("Select Source Material:", ("Wikipedia Topic", "Upload Document (PDF/DOCX)", "Upload Image"))
