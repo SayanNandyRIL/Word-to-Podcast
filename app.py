@@ -224,25 +224,30 @@ if raw_content:
     if st.button("🎙️ Generate Podcast"):
         
         # 1. Script Generation
-        with st.spinner("🤖 Writing Hinglish Script (Wait for it...)..."):
+        with st.spinner("🤖 Writing Hinglish Script..."):
             script = generate_script(raw_content)
             st.subheader("📝 Generated Script")
             st.text_area("Script", script, height=300)
         
         # 2. Audio Generation
-        with st.spinner("🔊 Synthesizing Audio (This takes about 30-60s)..."):
+        with st.spinner("🔊 Synthesizing Audio..."):
             final_audio = generate_audio(script)
             
-            # Export to memory buffer
-            buffer = BytesIO()
-            final_audio.export(buffer, format="mp3")
-            
-            st.audio(buffer, format="audio/mp3")
-            
-            # Download Button
-            st.download_button(
-                label="📥 Download MP3",
-                data=buffer,
-                file_name="hinglish_podcast.mp3",
-                mime="audio/mp3"
-            )
+            if final_audio:
+                # Export to memory buffer
+                buffer = BytesIO()
+                final_audio.export(buffer, format="mp3")
+                buffer.seek(0) # Rewind the buffer
+                
+                st.success("Podcast Generated Successfully!")
+                st.audio(buffer, format="audio/mp3")
+                
+                # Download Button
+                st.download_button(
+                    label="📥 Download MP3",
+                    data=buffer,
+                    file_name="hinglish_podcast.mp3",
+                    mime="audio/mp3"
+                )
+            else:
+                st.error("Failed to generate audio. Please check the error messages above.")
