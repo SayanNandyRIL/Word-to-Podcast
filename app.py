@@ -89,7 +89,7 @@ def get_image_analysis(uploaded_file):
 def generate_script(content_text):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
-    Create a conversation between **Rahul** (energetic, cracks jokes) and **Priya** (smart, sarcastic).
+    Create a conversation between **Sayan** (energetic, cracks jokes) and **Sucheta** (smart, sarcastic).
     
     **Content Source:** 
     {content_text[:4000]}  # Limiting text length
@@ -102,8 +102,8 @@ def generate_script(content_text):
     5. **Length:** Keep it around 250-300 words total.
     
     **Format:**
-    Rahul: Dialogue...
-    Priya: Dialogue...
+    Sayan: Dialogue...
+    Sucheta: Dialogue...
     """
 
     response = client.chat.completions.create(
@@ -120,7 +120,7 @@ def generate_audio(script_text):
     lines = script_text.strip().split('\n')
     combined_audio = AudioSegment.empty()
     
-    voice_map = {"Rahul": "onyx", "Priya": "nova"}
+    voice_map = {"Sayan": "onyx", "Sucheta": "nova"}
     
     # Track if we actually generated any audio
     chunks_generated = 0
@@ -131,7 +131,7 @@ def generate_audio(script_text):
 
     for i, line in enumerate(lines):
         # Regex to find "Name: Text"
-        match = re.match(r"^(Rahul|Priya):\s*(.*)", line, re.IGNORECASE)
+        match = re.match(r"^(Sayan|Sucheta):\s*(.*)", line, re.IGNORECASE)
         if match:
             speaker, text = match.groups()
             clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
