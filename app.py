@@ -19,6 +19,7 @@ if "raw_content" not in st.session_state:
     st.session_state.raw_content = ""
 if "script" not in st.session_state:
     st.session_state.script = ""
+    st.session_state.edited_script = ""
 if "audio_bytes" not in st.session_state:
     st.session_state.audio_bytes = None
 
@@ -174,6 +175,7 @@ if source_type == "Wikipedia Topic":
             # SAVE TO SESSION STATE
             st.session_state.raw_content = get_wiki_content(topic)
             st.session_state.script = "" # Reset script if new content fetched
+            st.session_state.edited_script = ""
             st.session_state.audio_bytes = None
 
 elif source_type == "Upload Document (PDF/DOCX/TXT)":
@@ -187,6 +189,7 @@ elif source_type == "Upload Document (PDF/DOCX/TXT)":
                 elif ext == ".txt": st.session_state.raw_content = str(uploaded_file.read(), "utf-8")
                 
                 st.session_state.script = ""
+                st.session_state.edited_script = ""
                 st.session_state.audio_bytes = None
 
 elif source_type == "Upload Image":
@@ -197,6 +200,7 @@ elif source_type == "Upload Image":
             with st.spinner("Analyzing Image '" + uploaded_file + "'..."):
                 st.session_state.raw_content = get_image_analysis(uploaded_file)
                 st.session_state.script = ""
+                st.session_state.edited_script = ""
                 st.session_state.audio_bytes = None
 
 # DISPLAY SECTION (Check Session State instead of local variable)
@@ -216,19 +220,32 @@ if st.session_state.raw_content:
     if st.session_state.script:
         st.subheader("📝 Script")
         st.text_area("Script", st.session_state.script, height=300)
-        
-        # 2. Audio Generation
-        if st.button("Generate Audio"):
-            with st.spinner("Synthesizing Audio..."):
-                final_audio = generate_audio(st.session_state.script)
-                if final_audio: # Export to memory buffer
-                    buffer = BytesIO()
-                    final_audio.export(buffer, format="mp3")
-                    st.session_state.audio_bytes = buffer.getvalue()
 
-            # PLAY AUDIO
-            if st.session_state.audio_bytes:
-                st.success("Podcast Generated Successfully!")
-                st.audio(st.session_state.audio_bytes, format="audio/mp3")
-                st.download_button("📥 Download MP3", st.session_state.audio_bytes, "podcast.mp3", "audio/mp3")
-            else: st.error("Failed to generate audio. Please check the error messages above.")
+    # 2. Edit Script Section
+    if st.session_state.script:
+        st.subheader("📝 Edit Script")
+        st.info("You can edit the dialogue below before generating audio. Add your own jokes!")
+
+        # This Text Area captures the user's edits
+        st.session_state.edited_script = st.text_area("Script Editor", value=st.session_state.initial_script, height=300, max_chars=4000, help="The script cannot exceed 4000 characters to manage audio generation costs.")
+        
+        # 3. Audio Generation
+        if st.button("Generate Audio"):
+            if not st.session_state.edited_script.strip():
+                st.error("Script is empty!")
+            else:
+                with st.spinner("Synthesizing Audio..."):
+                    final_audio = generate_audio(st.session_state.edited_script)
+
+                    if final_audio: # Export to memory buffer
+                        buffer = BytesIO()
+                        final_audio.export(buffer, format="mp3")
+                        st.session_state.audio_bytes = buffer.getvalue()
+
+                        # PLAY AUDIO
+                        if st.session_state.audio_bytes:
+                            st.success("Podcast Generated Successfully!")
+                            st.audio(st.session_state.audio_bytes, format="audio/mp3")
+                            st.download_button("📥 Download MP3", st.session_state.audio_bytes, "podcast.mp3", "audio/mp3")
+                        else: st.error("Failed to generate audio. Please check the error messages above.")
+                    else: st.error("Failed to generate audio. Check API keys or script format.")
