@@ -164,9 +164,9 @@ def generate_audio(script_text):
 # --- 5. Main UI LOGIC WITH SESSION STATE ---
 
 source_type = st.radio("Select Source:", ("Wikipedia Topic", "Upload Document", "Upload Image"))
-if st.session_state.source_type == ""
+if st.session_state.source_type == "":
     st.session_state.source_type = source_type
-elif st.session_state.source_type != source_type
+elif st.session_state.source_type != source_type:
     # Reset script if new content fetched
     st.session_state.raw_content = ""
     st.session_state.initial_script = "" 
