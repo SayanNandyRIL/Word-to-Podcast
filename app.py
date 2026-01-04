@@ -116,7 +116,6 @@ def get_image_analysis(uploaded_file):
 def generate_script(content_text, name1, name2):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
-    Create a conversation between **Sayan** (energetic, cracks jokes) and **Suchi** (smart, sarcastic).
     
     **INSTRUCTIONS:**
     1. Language: Hinglish (Hindi + English).
