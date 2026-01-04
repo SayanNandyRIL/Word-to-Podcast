@@ -136,17 +136,20 @@ def generate_script(content_text, name1, name2):
     **CRITICAL INSTRUCTIONS FOR AUDIO PERFORMANCE:**
     1. **Narrator:** Starts with a 1-sentence context setting intro (English only).
     2. Language: Hinglish (Hindi + English) for {name1} and {name2}.
-    3. **Vocalization:** Do NOT use stage directions like `(laughs)` or `(sighs)`. Instead, WRITE THE SOUND.
-       - WRITE: "Ha ha ha!", "Arre yaar...", "Ughhh!", "Hmm...", "Ahem!".
+    3. **LAUGHTER (Mandatory):** You MUST add laughter sounds naturally in the dialogue.
+       - **Do NOT** use stage directions like `(laughs)` or `(chuckles)`. The audio engine ignores these.
+       - **INSTEAD, WRITE:** "Ha ha ha!", "He he!", "Bwahaha!", "Arey lol!", "Haa haa!".
+    4. **Vocalization:** Do NOT use stage directions like `(laughs)` or `(sighs)`. Instead, WRITE THE SOUND.
+       - WRITE: "Ha ha ha!", "Arre yaar...", "Ughhh!", "Hmm...", "Ahem!", "Oye hoye!".
        Fillers: Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
-    4. **Tone Direction via Text:** 
+    5. **Tone Direction via Text:** 
        - To shout, use CAPITALS (e.g., "KYA BOL RAHA HAI?!").
        - To pause/hesitate, use ellipses (e.g., "Matlab... I think...").
        - To emphasize, use italics logic (e.g., "Bilkul nahi!").
-    5. Tone: Natural, interruptive, casual.
-    6. Length: Keep it around 250-300 words total.
-    7. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
-    8. **IMPORTANT:** Do NOT use asterisks (**) or bold formatting for names.
+    6. Tone: Natural, interruptive, casual.
+    7. Length: Keep it around 250-300 words total.
+    8. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
+    9. **IMPORTANT:** Do NOT use asterisks (**) or bold formatting for names.
 
     **EXAMPLE OUTPUT:**
     Narrator: In today's episode, we discuss the wild journey of the Mumbai Indians.
