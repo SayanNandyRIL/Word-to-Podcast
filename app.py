@@ -113,12 +113,12 @@ def get_image_analysis(uploaded_file):
         return None
 
 # --- 3. SCRIPT GENERATION ---
-def generate_script(content_text):
+def generate_script(content_text, name1, name2):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
     Create a conversation between **Sayan** (energetic, cracks jokes) and **Suchi** (smart, sarcastic).
     
-    **CRITICAL INSTRUCTIONS:**
+    **INSTRUCTIONS:**
     1. Language: Hinglish (Hindi + English).
     2. Fillers: Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
     3. Laughter: Write "Ha ha ha" or "He he" where appropriate.
@@ -139,7 +139,7 @@ def generate_script(content_text):
     return response.choices[0].message.content
 
 # --- 4. AUDIO GENERATION ---
-def generate_audio(script_text):
+def generate_audio(script_text, name1, voice1, name2, voice2):
     lines = script_text.strip().split('\n')
     combined_audio = AudioSegment.empty()
     voice_map = {name1: voice1, name2: voice2}
@@ -161,7 +161,7 @@ def generate_audio(script_text):
             speaker, text = match.groups()
             clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
 
-            # Resolve speaker name (Handle case differences e.g. "rahul" vs "Rahul")
+            # Resolve speaker name (Handle case differences e.g. "sayan" vs "Sayan")
             # We check which key in voice_map matches the found speaker string (case-insensitive)
             current_voice = "alloy" # Default
             for name_key, voice_val in voice_map.items():
@@ -250,7 +250,7 @@ if st.session_state.raw_content:
     if st.button("🎙️ Generate Script for Podcast"):
         # 1. Script Generation
         with st.spinner("Writing Script..."):
-            st.session_state.initial_script = generate_script(st.session_state.raw_content)
+            st.session_state.initial_script = generate_script(st.session_state.raw_content, s1_name, s2_name)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
     # 1. Show Script
@@ -276,7 +276,7 @@ if st.session_state.raw_content:
                 st.error("Script is empty!")
             else:
                 with st.spinner("Synthesizing Audio..."):
-                    final_audio = generate_audio(st.session_state.edited_script)
+                    final_audio = generate_audio(st.session_state.edited_script, s1_name, s1_voice_id, s2_name, s2_voice_id)
 
                     if final_audio: # Export to memory buffer
                         buffer = BytesIO()
