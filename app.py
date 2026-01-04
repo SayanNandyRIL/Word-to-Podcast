@@ -163,7 +163,7 @@ def generate_audio(script_text):
 # --- 5. Main UI LOGIC WITH SESSION STATE ---
 
 source_type = st.radio("Select Source:", ("Wikipedia Topic", "Upload Document", "Upload Image"))
-session_state.raw_content = ""
+st.session_state.raw_content = ""
 
 # INPUT SECTION
 if source_type == "Wikipedia Topic":
