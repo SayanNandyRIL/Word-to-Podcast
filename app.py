@@ -84,7 +84,7 @@ def get_image_analysis(uploaded_file):
 def generate_script(content_text):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
-    Create a conversation between **Sayan** (energetic, cracks jokes) and **Sucheta** (smart, sarcastic).
+    Create a conversation between **Sayan** (energetic, cracks jokes) and **Suchi** (smart, sarcastic).
     
     **Content Source:** 
     {content_text[:4000]}  # Limiting text length
@@ -98,7 +98,7 @@ def generate_script(content_text):
     
     **Format:**
     Sayan: Dialogue...
-    Sucheta: Dialogue...
+    Suchi: Dialogue...
     """
 
     response = client.chat.completions.create(
