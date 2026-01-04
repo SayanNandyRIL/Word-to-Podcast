@@ -129,18 +129,30 @@ def get_image_analysis(uploaded_file):
 def generate_script(content_text, name1, name2):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
-    
-    **INSTRUCTIONS:**
-    1. Language: Hinglish (Hindi + English).
-    2. Fillers: Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
-    3. Laughter: Write "Ha ha ha" or "He he" where appropriate.
-    4. Tone: Natural, interruptive, casual.
-    5. Length: Keep it around 250-300 words total.
-    6. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
-    7. **IMPORTANT:** Do NOT use asterisks (**) or bold formatting for names.
 
     **Source Material:** 
     {content_text[:4000]}  # Limiting text length
+
+    **CRITICAL INSTRUCTIONS FOR AUDIO PERFORMANCE:**
+    1. **Narrator:** Starts with a 1-sentence context setting intro (English only).
+    2. Language: Hinglish (Hindi + English) for {name1} and {name2}.
+    3. **Vocalization:** Do NOT use stage directions like `(laughs)` or `(sighs)`. Instead, WRITE THE SOUND.
+       - WRITE: "Ha ha ha!", "Arre yaar...", "Ughhh!", "Hmm...", "Ahem!".
+       Fillers: Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
+    4. **Tone Direction via Text:** 
+       - To shout, use CAPITALS (e.g., "KYA BOL RAHA HAI?!").
+       - To pause/hesitate, use ellipses (e.g., "Matlab... I think...").
+       - To emphasize, use italics logic (e.g., "Bilkul nahi!").
+    5. Tone: Natural, interruptive, casual.
+    6. Length: Keep it around 250-300 words total.
+    7. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
+    8. **IMPORTANT:** Do NOT use asterisks (**) or bold formatting for names.
+
+    **EXAMPLE OUTPUT:**
+    Narrator: In today's episode, we discuss the wild journey of the Mumbai Indians.
+    {name1}: Oye hoye! What a team, yaar! Hahaha!
+    {name2}: Haa, but... performance thoda shaky tha last year, no?
+    {name1}: ARE YOU SERIOUS? Paanch trophies hain unke paas!
     
     """
 
