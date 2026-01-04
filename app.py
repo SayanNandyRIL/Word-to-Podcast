@@ -170,7 +170,7 @@ def generate_audio(script_text, name1, voice1, name2, voice2):
                     break
 
             if clean_text:
-                status_text.text(f"Generating audio for {speaker}...")
+                status_text.text(f"Generating audio for " + name_key + "...")
                 try:
                     response = client.audio.speech.create(model="tts-1", voice=current_voice, input=clean_text)
                     # Debug: Check if OpenAI returned data
