@@ -218,7 +218,7 @@ if st.session_state.raw_content:
         st.text_area("Script", st.session_state.script, height=300)
         
         # 2. Audio Generation
-        # if st.button("Generate Audio"):
+        if st.button("Generate Audio"):
             with st.spinner("Synthesizing Audio..."):
                 final_audio = generate_audio(st.session_state.script)
                 if final_audio: # Export to memory buffer
