@@ -7,56 +7,55 @@ from openai import OpenAI
 from pydub import AudioSegment
 from io import BytesIO
 from pypdf import PdfReader
-from PIL import Image
 from docx import Document
 
 # --- 1. CONFIGURATION & SETUP ---
 st.set_page_config(page_title="Hinglish Podcast Generator", page_icon="🎙️")
-
 st.title("🎙️ Any Doc to Hinglish Podcast")
 st.markdown("Convert **Wikipedia, PDFs, Images, or Word Docs** into a fun, 2-minute Hinglish conversation.")
 
-# Sidebar for API Key
-api_key = st.sidebar.text_input("Enter OpenAI API Key", type="password")
+# Initialize Session State Variables (The Memory)
+if "raw_content" not in st.session_state:
+    st.session_state.raw_content = ""
+if "script" not in st.session_state:
+    st.session_state.script = ""
+if "audio_bytes" not in st.session_state:
+    st.session_state.audio_bytes = None
 
+# Sidebar
+api_key = st.sidebar.text_input("Enter OpenAI API Key", type="password")
 if not api_key:
-    st.warning("Please enter your OpenAI API Key in the sidebar to proceed.")
+    st.warning("Please enter your OpenAI API Key in the sidebar.")
     st.stop()
 
 client = OpenAI(api_key=api_key)
 
 # --- 2. TEXT EXTRACTION FUNCTIONS ---
-
 def get_wiki_content(topic):
     """Fetches Wikipedia summary."""
     try:
-        summary = wikipedia.summary(topic, sentences=15)
-        return summary
+        return wikipedia.summary(topic, sentences=15)
     except Exception as e:
-        st.error(f"Error fetching Wikipedia: {e}")
+        st.error(f"Error: {e}")
         return None
 
 def get_pdf_text(uploaded_file):
     """Extracts text from uploaded PDF."""
     try:
         reader = PdfReader(uploaded_file)
-        text = ""
-        # Limit to first 10 pages
-        for page in reader.pages[:10]:
-            text += page.extract_text() or ""
+        text = "".join([page.extract_text() or "" for page in reader.pages[:10]])
         return text
     except Exception as e:
-        st.error(f"Error reading PDF: {e}")
+        st.error(f"Error reading PDF '" + uploaded_file + "': {e}")
         return None
 
 def get_docx_text(uploaded_file):
     """Extracts text from uploaded DOCX file."""
     try:
         doc = Document(uploaded_file)
-        text = "\n".join([para.text for para in doc.paragraphs])
-        return text
+        return "\n".join([para.text for para in doc.paragraphs])
     except Exception as e:
-        st.error(f"Error reading Word Document: {e}")
+        st.error(f"Error reading Word Document '" + uploaded_file + "': {e}")
         return None
 
 def get_image_analysis(uploaded_file):
@@ -65,27 +64,22 @@ def get_image_analysis(uploaded_file):
         # Encode image to base64
         bytes_data = uploaded_file.getvalue()
         base64_image = base64.b64encode(bytes_data).decode('utf-8')
-
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "Extract all the text and summarize the visual content of this image for a podcast script."},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}},
-                    ],
-                }
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Extract text and summarize visual content."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}},
+                ]}
             ],
             max_tokens=500,
         )
         return response.choices[0].message.content
     except Exception as e:
-        st.error(f"Error analyzing image: {e}")
+        st.error(f"Error analyzing image '" + uploaded_file + "': {e}")
         return None
 
 # --- 3. SCRIPT GENERATION ---
-
 def generate_script(content_text):
     prompt = f"""
     You are a scriptwriter for a candid, funny Indian podcast. 
@@ -114,13 +108,10 @@ def generate_script(content_text):
     return response.choices[0].message.content
 
 # --- 4. AUDIO GENERATION ---
-
 def generate_audio(script_text):
-    # Parse the script
     lines = script_text.strip().split('\n')
     combined_audio = AudioSegment.empty()
-    
-    voice_map = {"Sayan": "onyx", "Sucheta": "nova"}
+    voice_map = {"Sayan": "onyx", "Suchi": "nova"}
     
     # Track if we actually generated any audio
     chunks_generated = 0
@@ -128,36 +119,30 @@ def generate_audio(script_text):
     progress_bar = st.progress(0)
     total_lines = len(lines)
     status_text = st.empty()
-
+    
     for i, line in enumerate(lines):
         # Regex to find "Name: Text"
-        match = re.match(r"^(Sayan|Sucheta):\s*(.*)", line, re.IGNORECASE)
+        match = re.match(r"^(Sayan|Suchi):\s*(.*)", line, re.IGNORECASE)
         if match:
             speaker, text = match.groups()
             clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
-            
+
             if clean_text:
-                voice = voice_map.get(speaker, "alloy")
                 status_text.text(f"Generating audio for {speaker}...")
-                
                 try:
                     response = client.audio.speech.create(
-                        model="tts-1",
-                        voice=voice,
-                        input=clean_text
+                        model="tts-1", voice=voice_map.get(speaker, "alloy"), input=clean_text
                     )
-                    
-                    # Debug: Check if OpenAI returned data
+            # Debug: Check if OpenAI returned data
                     if not response.content:
                         st.error("OpenAI API returned empty audio content.")
                         continue
 
                     # Convert bytes to audio segment
                     audio_chunk = AudioSegment.from_file(BytesIO(response.content), format="mp3")
-                    silence = AudioSegment.silent(duration=150) # 150ms pause
-                    combined_audio += audio_chunk + silence
+                    combined_audio += audio_chunk + AudioSegment.silent(duration=150) # 150ms pause
                     chunks_generated += 1
-                    
+
                 except Exception as e:
                     # SHOW THE ERROR ON SCREEN
                     st.error(f"Error generating line {i}: {e}")
@@ -165,90 +150,85 @@ def generate_audio(script_text):
                     if "ffmpeg" in str(e).lower() or "file not found" in str(e).lower():
                         st.error("🚨 CRITICAL ERROR: FFmpeg is missing. Please check packages.txt.")
                         return None
-        
-        if total_lines > 0:
-            progress_bar.progress((i + 1) / total_lines)
-            
-    status_text.empty()
+
+        if total_lines > 0: progress_bar.progress((i + 1) / total_lines)
+
+        status_text.empty()
     
-    if chunks_generated == 0:
-        st.warning("No audio chunks were generated. Check the errors above.")
-        return None
+        if chunks_generated == 0:
+            st.warning("No audio chunks were generated. Check the errors above.")
+            return None
         
     return combined_audio
-# --- 5. MAIN UI LOGIC ---
 
-source_type = st.radio("Select Source Material:", ("Wikipedia Topic", "Upload Document (PDF/DOCX)", "Upload Image"))
+# --- 5. Main UI LOGIC WITH SESSION STATE ---
 
+source_type = st.radio("Select Source:", ("Wikipedia Topic", "Upload Document", "Upload Image"))
 raw_content = ""
 
+# INPUT SECTION
 if source_type == "Wikipedia Topic":
-    topic = st.text_input("Enter Topic Name (e.g., MS Dhoni)")
+    topic = st.text_input("Enter Topic Name (e.g. Mumbai Indians)")
     if st.button("Fetch Wiki Data") and topic:
-        with st.spinner("Searching Wikipedia..."):
-            raw_content = get_wiki_content(topic)
-            if raw_content:
-                st.success("✅ Content Found for '" + topic + "'!")
-                st.expander("View Content").write(raw_content)
+        with st.spinner("Searching Wikipedia for '" + topic + "'..."):
+            # SAVE TO SESSION STATE
+            st.session_state.raw_content = get_wiki_content(topic)
+            st.session_state.script = "" # Reset script if new content fetched
+            st.session_state.audio_bytes = None
 
-elif source_type == "Upload Document (PDF/DOCX)":
-    uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
-    
-    if uploaded_file is not None:
-        file_ext = os.path.splitext(uploaded_file.name)[1].lower()
-        
-        with st.spinner("Extracting text..."):
-            if file_ext == ".pdf":
-                raw_content = get_pdf_text(uploaded_file)
-            elif file_ext == ".docx":
-                raw_content = get_docx_text(uploaded_file)
-            elif file_ext == ".txt":
-                raw_content = str(uploaded_file.read(), "utf-8")
+elif source_type == "Upload Document (PDF/DOCX/TXT)":
+    uploaded_file = st.file_uploader("Choose file", type=["pdf", "docx", "txt"])
+    if uploaded_file:
+        if st.button("Process Document"):
+            with st.spinner("Extracting from document ' + uploaded_file + "'..."):
+                ext = os.path.splitext(uploaded_file.name)[1].lower()
+                if ext == ".pdf": st.session_state.raw_content = get_pdf_text(uploaded_file)
+                elif ext == ".docx": st.session_state.raw_content = get_docx_text(uploaded_file)
+                elif ext == ".txt": st.session_state.raw_content = str(uploaded_file.read(), "utf-8")
                 
-            if raw_content:
-                st.success(f"✅ Text Extracted from {uploaded_file.name}!")
-                st.expander("View Extracted Text").write(raw_content[:1000] + "...")
+                st.session_state.script = ""
+                st.session_state.audio_bytes = None
 
 elif source_type == "Upload Image":
-    uploaded_file = st.file_uploader("Choose an Image", type=["jpg", "png", "jpeg"])
-    if uploaded_file is not None:
+    uploaded_file = st.file_uploader("Choose Image", type=["jpg", "jpeg", "png"])
+    if uploaded_file:
         st.image(uploaded_file, caption="Uploaded Image", width=300)
-        with st.spinner("Analyzing Image with GPT-4o Vision..."):
-            raw_content = get_image_analysis(uploaded_file)
-            if raw_content:
-                st.success("✅ Image Analyzed!")
-                st.expander("View Analysis").write(raw_content)
+        if st.button("Analyze Image"):
+            with st.spinner("Analyzing Image '" + uploaded_file + "'..."):
+                st.session_state.raw_content = get_image_analysis(uploaded_file)
+                st.session_state.script = ""
+                st.session_state.audio_bytes = None
 
-# --- Generate Podcast Button ---
-st.text_area("Script", raw_content, height=300)
-if raw_content:
+# DISPLAY SECTION (Check Session State instead of local variable)
+if st.session_state.raw_content:
+    st.success("✅ Content Loaded")
+    with st.expander("View Content"):
+        st.write(st.session_state.raw_content)
+
+    # --- Generate Podcast Button ---
     if st.button("🎙️ Generate Podcast"):
-        st.text_area("Script", raw_content, height=300)
         # 1. Script Generation
-        with st.spinner("🤖 Writing Hinglish Script..."):
-            script = generate_script(raw_content)
-            st.subheader("📝 Generated Script")
-            st.text_area("Script", script, height=300)
+        with st.spinner("Writing Script..."):
+            st.session_state.script = generate_script(st.session_state.raw_content)
+            st.session_state.audio_bytes = None # Reset audio if script changes
+
+    # SHOW SCRIPT
+    if st.session_state.script:
+        st.subheader("📝 Script")
+        st.text_area("Script", st.session_state.script, height=300)
         
         # 2. Audio Generation
-        with st.spinner("🔊 Synthesizing Audio..."):
-            final_audio = generate_audio(script)
-            
-            if final_audio:
-                # Export to memory buffer
-                buffer = BytesIO()
-                final_audio.export(buffer, format="mp3")
-                buffer.seek(0) # Rewind the buffer
-                
-                st.success("Podcast Generated Successfully!")
-                st.audio(buffer, format="audio/mp3")
-                
-                # Download Button
-                st.download_button(
-                    label="📥 Download MP3",
-                    data=buffer,
-                    file_name="hinglish_podcast.mp3",
-                    mime="audio/mp3"
-                )
-            else:
-                st.error("Failed to generate audio. Please check the error messages above.")
+        # if st.button("Generate Audio"):
+            with st.spinner("Synthesizing Audio..."):
+                final_audio = generate_audio(st.session_state.script)
+                if final_audio: # Export to memory buffer
+                    buffer = BytesIO()
+                    final_audio.export(buffer, format="mp3")
+                    st.session_state.audio_bytes = buffer.getvalue()
+
+    # PLAY AUDIO
+    if st.session_state.audio_bytes:
+        st.success("Podcast Generated Successfully!")
+        st.audio(st.session_state.audio_bytes, format="audio/mp3")
+        st.download_button("📥 Download MP3", st.session_state.audio_bytes, "podcast.mp3", "audio/mp3")
+    else: st.error("Failed to generate audio. Please check the error messages above.")
