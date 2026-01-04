@@ -180,7 +180,7 @@ elif source_type == "Upload Document (PDF/DOCX/TXT)":
     uploaded_file = st.file_uploader("Choose file", type=["pdf", "docx", "txt"])
     if uploaded_file:
         if st.button("Process Document"):
-            with st.spinner("Extracting from document ' + uploaded_file + "'..."):
+            with st.spinner("Extracting from document '" + uploaded_file + "'..."):
                 ext = os.path.splitext(uploaded_file.name)[1].lower()
                 if ext == ".pdf": st.session_state.raw_content = get_pdf_text(uploaded_file)
                 elif ext == ".docx": st.session_state.raw_content = get_docx_text(uploaded_file)
