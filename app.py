@@ -158,7 +158,7 @@ def generate_audio(script_text, name1, voice1, name2, voice2):
         match = re.match(pattern, line, re.IGNORECASE)
 
         if match:
-            speaker, text = match.groups()
+            speaker_found, text = match.groups()
             clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
 
             # Resolve speaker name (Handle case differences e.g. "sayan" vs "Sayan")
@@ -249,7 +249,7 @@ if st.session_state.raw_content:
     # --- Generate Podcast Button ---
     if st.button("🎙️ Generate Script for Podcast"):
         # 1. Script Generation (Passing Custom Names)
-        with st.spinner("Writing Script for {s1_name} and {s2_name}..."):
+        with st.spinner("Writing Script for " + s1_name + " and " + s2_name + "..."):
             st.session_state.initial_script = generate_script(st.session_state.raw_content, s1_name, s2_name)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
