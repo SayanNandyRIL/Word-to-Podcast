@@ -17,7 +17,7 @@ st.markdown("Convert **Wikipedia, PDFs, Images, or Word Docs** into a fun, 2-min
 # Initialize Session State Variables (The Memory)
 if "raw_content" not in st.session_state:
     st.session_state.raw_content = ""
-if "script" not in st.session_state:
+if "initial_script" not in st.session_state:
     st.session_state.initial_script = ""
     st.session_state.edited_script = ""
 if "audio_bytes" not in st.session_state:
@@ -131,9 +131,7 @@ def generate_audio(script_text):
             if clean_text:
                 status_text.text(f"Generating audio for {speaker}...")
                 try:
-                    response = client.audio.speech.create(
-                        model="tts-1", voice=voice_map.get(speaker, "alloy"), input=clean_text
-                    )
+                    response = client.audio.speech.create(model="tts-1", voice=voice_map.get(speaker, "alloy"), input=clean_text)
             # Debug: Check if OpenAI returned data
                     if not response.content:
                         st.error("OpenAI API returned empty audio content.")
@@ -178,7 +176,7 @@ if source_type == "Wikipedia Topic":
             st.session_state.edited_script = ""
             st.session_state.audio_bytes = None
 
-elif source_type == "Upload Document (PDF/DOCX/TXT)":
+elif source_type == "Upload Document":
     uploaded_file = st.file_uploader("Choose file", type=["pdf", "docx", "txt"])
     if uploaded_file:
         if st.button("Process Document"):
@@ -216,20 +214,26 @@ if st.session_state.raw_content:
             st.session_state.initial_script = generate_script(st.session_state.raw_content)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
+    """
     # 1. Show Script
     if st.session_state.initial_script:
         st.subheader("📝 Script")
         st.text_area("Script", st.session_state.initial_script, height=300)
+    """
 
     # 2. Edit Script Section
     if st.session_state.initial_script:
-        st.subheader("📝 Edit Script")
+        st.subheader("📝 Script")
         st.info("You can edit the dialogue below before generating audio. Add your own jokes!")
 
         # This Text Area captures the user's edits
         st.session_state.edited_script = st.text_area("Script Editor", value=st.session_state.initial_script, height=300, max_chars=4000, help="The script cannot exceed 4000 characters to manage audio generation costs.")
+
+        # 3. Reset Script
+        if st.button("Reset Script"): 
+            st.session_state.edited_script = st.text_area("Script Editor", value=st.session_state.initial_script, height=300, max_chars=4000, help="The script cannot exceed 4000 characters to manage audio generation costs.")
         
-        # 3. Audio Generation
+        # 4. Audio Generation
         if st.button("Generate Audio"):
             if not st.session_state.edited_script.strip():
                 st.error("Script is empty!")
