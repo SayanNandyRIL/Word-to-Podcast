@@ -11,6 +11,19 @@ from docx import Document
 
 # --- 1. CONFIGURATION & SETUP ---
 st.set_page_config(page_title="Hinglish Podcast Generator", page_icon="🎙️")
+# --- CSS BLOCK TO SET SIDEBAR WIDTH ---
+st.markdown(
+    """
+    <style>
+    [data-testid="stSidebar"] {
+        min-width: 400px;
+        max-width: 600px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+# -----------------------------------------------
 st.title("🎙️ Any Doc to Hinglish Podcast")
 st.markdown("Convert **Wikipedia, PDFs, Texts, Images, or Word Docs** into a fun, 2-minute Hinglish conversation.")
 
@@ -124,6 +137,7 @@ def generate_script(content_text, name1, name2):
     4. Tone: Natural, interruptive, casual.
     5. Length: Keep it around 250-300 words total.
     6. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
+    7. **IMPORTANT:** Do NOT use asterisks (**) or bold formatting for names.
 
     **Source Material:** 
     {content_text[:4000]}  # Limiting text length
