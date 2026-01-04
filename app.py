@@ -226,9 +226,9 @@ if st.session_state.raw_content:
                     final_audio.export(buffer, format="mp3")
                     st.session_state.audio_bytes = buffer.getvalue()
 
-    # PLAY AUDIO
-    if st.session_state.audio_bytes:
-        st.success("Podcast Generated Successfully!")
-        st.audio(st.session_state.audio_bytes, format="audio/mp3")
-        st.download_button("📥 Download MP3", st.session_state.audio_bytes, "podcast.mp3", "audio/mp3")
-    else: st.error("Failed to generate audio. Please check the error messages above.")
+            # PLAY AUDIO
+            if st.session_state.audio_bytes:
+                st.success("Podcast Generated Successfully!")
+                st.audio(st.session_state.audio_bytes, format="audio/mp3")
+                st.download_button("📥 Download MP3", st.session_state.audio_bytes, "podcast.mp3", "audio/mp3")
+            else: st.error("Failed to generate audio. Please check the error messages above.")
