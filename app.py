@@ -220,6 +220,7 @@ elif source_type == "Upload Image":
                 st.expander("View Analysis").write(raw_content)
 
 # --- Generate Podcast Button ---
+st.text_area("Script", raw_content, height=300)
 if raw_content:
     if st.button("🎙️ Generate Podcast"):
         st.text_area("Script", raw_content, height=300)
