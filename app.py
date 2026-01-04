@@ -18,7 +18,7 @@ st.markdown("Convert **Wikipedia, PDFs, Images, or Word Docs** into a fun, 2-min
 if "raw_content" not in st.session_state:
     st.session_state.raw_content = ""
 if "script" not in st.session_state:
-    st.session_state.script = ""
+    st.session_state.initial_script = ""
     st.session_state.edited_script = ""
 if "audio_bytes" not in st.session_state:
     st.session_state.audio_bytes = None
@@ -174,7 +174,7 @@ if source_type == "Wikipedia Topic":
         with st.spinner("Searching Wikipedia for '" + topic + "'..."):
             # SAVE TO SESSION STATE
             st.session_state.raw_content = get_wiki_content(topic)
-            st.session_state.script = "" # Reset script if new content fetched
+            st.session_state.initial_script = "" # Reset script if new content fetched
             st.session_state.edited_script = ""
             st.session_state.audio_bytes = None
 
@@ -188,7 +188,7 @@ elif source_type == "Upload Document (PDF/DOCX/TXT)":
                 elif ext == ".docx": st.session_state.raw_content = get_docx_text(uploaded_file)
                 elif ext == ".txt": st.session_state.raw_content = str(uploaded_file.read(), "utf-8")
                 
-                st.session_state.script = ""
+                st.session_state.initial_script = ""
                 st.session_state.edited_script = ""
                 st.session_state.audio_bytes = None
 
@@ -199,7 +199,7 @@ elif source_type == "Upload Image":
         if st.button("Analyze Image"):
             with st.spinner("Analyzing Image '" + uploaded_file + "'..."):
                 st.session_state.raw_content = get_image_analysis(uploaded_file)
-                st.session_state.script = ""
+                st.session_state.initial_script = ""
                 st.session_state.edited_script = ""
                 st.session_state.audio_bytes = None
 
@@ -213,16 +213,16 @@ if st.session_state.raw_content:
     if st.button("🎙️ Generate Podcast"):
         # 1. Script Generation
         with st.spinner("Writing Script..."):
-            st.session_state.script = generate_script(st.session_state.raw_content)
+            st.session_state.initial_script = generate_script(st.session_state.raw_content)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
     # 1. Show Script
-    if st.session_state.script:
+    if st.session_state.initial_script:
         st.subheader("📝 Script")
-        st.text_area("Script", st.session_state.script, height=300)
+        st.text_area("Script", st.session_state.initial_script, height=300)
 
     # 2. Edit Script Section
-    if st.session_state.script:
+    if st.session_state.initial_script:
         st.subheader("📝 Edit Script")
         st.info("You can edit the dialogue below before generating audio. Add your own jokes!")
 
