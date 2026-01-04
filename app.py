@@ -226,7 +226,7 @@ elif source_type == "Upload Document":
     uploaded_file = st.file_uploader("Choose file", type=["pdf", "docx", "txt"])
     if uploaded_file:
         if st.button("Process Document"):
-            with st.spinner("Extracting from document '" + uploaded_file + "'..."):
+            with st.spinner("Extracting from document '" + uploaded_file.name + "'..."):
                 ext = os.path.splitext(uploaded_file.name)[1].lower()
                 if ext == ".pdf": st.session_state.raw_content = get_pdf_text(uploaded_file)
                 elif ext == ".docx": st.session_state.raw_content = get_docx_text(uploaded_file)
@@ -237,7 +237,7 @@ elif source_type == "Upload Image":
     if uploaded_file:
         st.image(uploaded_file, caption="Uploaded Image", width=300)
         if st.button("Analyze Image"):
-            with st.spinner("Analyzing Image '" + uploaded_file + "'..."):
+            with st.spinner("Analyzing Image '" + uploaded_file.name + "'..."):
                 st.session_state.raw_content = get_image_analysis(uploaded_file)
 
 # DISPLAY SECTION (Check Session State instead of local variable)
