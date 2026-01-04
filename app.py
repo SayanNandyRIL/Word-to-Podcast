@@ -12,7 +12,7 @@ from docx import Document
 # --- 1. CONFIGURATION & SETUP ---
 st.set_page_config(page_title="Hinglish Podcast Generator", page_icon="🎙️")
 st.title("🎙️ Any Doc to Hinglish Podcast")
-st.markdown("Convert **Wikipedia, PDFs, Images, or Word Docs** into a fun, 2-minute Hinglish conversation.")
+st.markdown("Convert **Wikipedia, PDFs, Texts, Images, or Word Docs** into a fun, 2-minute Hinglish conversation.")
 
 # Initialize Session State Variables (The Memory)
 if "raw_content" not in st.session_state:
@@ -24,23 +24,25 @@ if "initial_script" not in st.session_state:
 if "audio_bytes" not in st.session_state:
     st.session_state.audio_bytes = None
 
-# Sidebar
-api_key = st.sidebar.text_input("Enter OpenAI API Key", type="password")
+# Sidebar Cinfiguration
+with st.sidebar:
+    st.header("⚙️ Settings")
+    api_key = st.sidebar.text_input("Enter OpenAI API Key", type="password")
 
-st.divider()
+    st.divider()
     st.subheader("🗣️ Speaker Configuration")
     
     # Speaker 1 Config
     col1, col2 = st.columns(2)
     with col1:
-        s1_name = st.text_input("Speaker 1", value="Rahul")
+        s1_name = st.text_input("Speaker 1", value="Sayan")
     with col2:
         s1_voice_label = st.selectbox("Voice 1", ["Male (Deep)", "Male (Neutral)", "Female (Energetic)", "Female (Calm)"], index=0)
 
     # Speaker 2 Config
     col3, col4 = st.columns(2)
     with col3:
-        s2_name = st.text_input("Speaker 2", value="Priya")
+        s2_name = st.text_input("Speaker 2", value="Suchi")
     with col4:
         s2_voice_label = st.selectbox("Voice 2", ["Male (Deep)", "Male (Neutral)", "Female (Energetic)", "Female (Calm)"], index=2)
 
