@@ -216,7 +216,7 @@ if st.session_state.raw_content:
             st.session_state.script = generate_script(st.session_state.raw_content)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
-    # SHOW SCRIPT
+    # 1. Show Script
     if st.session_state.script:
         st.subheader("📝 Script")
         st.text_area("Script", st.session_state.script, height=300)
