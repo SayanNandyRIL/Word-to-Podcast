@@ -92,7 +92,7 @@ def generate_script(content_text):
     **CRITICAL INSTRUCTIONS:**
     1. **Language:** Hinglish (Hindi + English).
     2. **Fillers:** Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
-    3. **Laughter:** Write "Hahaha" or "Hehe" where appropriate.
+    3. **Laughter:** Write "Ha ha ha" or "He he" where appropriate.
     4. **Tone:** Natural, interruptive, casual.
     5. **Length:** Keep it around 250-300 words total.
     
@@ -163,7 +163,7 @@ def generate_audio(script_text):
 # --- 5. Main UI LOGIC WITH SESSION STATE ---
 
 source_type = st.radio("Select Source:", ("Wikipedia Topic", "Upload Document", "Upload Image"))
-raw_content = ""
+session_state.raw_content = ""
 
 # INPUT SECTION
 if source_type == "Wikipedia Topic":
@@ -214,12 +214,10 @@ if st.session_state.raw_content:
             st.session_state.initial_script = generate_script(st.session_state.raw_content)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
-    """
     # 1. Show Script
-    if st.session_state.initial_script:
-        st.subheader("📝 Script")
-        st.text_area("Script", st.session_state.initial_script, height=300)
-    """
+    # if st.session_state.initial_script:
+        # st.subheader("📝 Script")
+        # st.text_area("Script", st.session_state.initial_script, height=300)
 
     # 2. Edit Script Section
     if st.session_state.initial_script:
