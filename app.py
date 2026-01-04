@@ -20,6 +20,7 @@ if "raw_content" not in st.session_state:
 if "initial_script" not in st.session_state:
     st.session_state.initial_script = ""
     st.session_state.edited_script = ""
+    st.session_state.source_type = ""
 if "audio_bytes" not in st.session_state:
     st.session_state.audio_bytes = None
 
@@ -163,7 +164,15 @@ def generate_audio(script_text):
 # --- 5. Main UI LOGIC WITH SESSION STATE ---
 
 source_type = st.radio("Select Source:", ("Wikipedia Topic", "Upload Document", "Upload Image"))
-st.session_state.raw_content = ""
+if st.session_state.source_type == ""
+    st.session_state.source_type = source_type
+elif st.session_state.source_type != source_type
+    # Reset script if new content fetched
+    st.session_state.raw_content = ""
+    st.session_state.initial_script = "" 
+    st.session_state.edited_script = ""
+    st.session_state.audio_bytes = None
+    st.session_state.source_type = source_type
 
 # INPUT SECTION
 if source_type == "Wikipedia Topic":
@@ -172,9 +181,6 @@ if source_type == "Wikipedia Topic":
         with st.spinner("Searching Wikipedia for '" + topic + "'..."):
             # SAVE TO SESSION STATE
             st.session_state.raw_content = get_wiki_content(topic)
-            st.session_state.initial_script = "" # Reset script if new content fetched
-            st.session_state.edited_script = ""
-            st.session_state.audio_bytes = None
 
 elif source_type == "Upload Document":
     uploaded_file = st.file_uploader("Choose file", type=["pdf", "docx", "txt"])
@@ -185,10 +191,6 @@ elif source_type == "Upload Document":
                 if ext == ".pdf": st.session_state.raw_content = get_pdf_text(uploaded_file)
                 elif ext == ".docx": st.session_state.raw_content = get_docx_text(uploaded_file)
                 elif ext == ".txt": st.session_state.raw_content = str(uploaded_file.read(), "utf-8")
-                
-                st.session_state.initial_script = ""
-                st.session_state.edited_script = ""
-                st.session_state.audio_bytes = None
 
 elif source_type == "Upload Image":
     uploaded_file = st.file_uploader("Choose Image", type=["jpg", "jpeg", "png"])
@@ -197,9 +199,6 @@ elif source_type == "Upload Image":
         if st.button("Analyze Image"):
             with st.spinner("Analyzing Image '" + uploaded_file + "'..."):
                 st.session_state.raw_content = get_image_analysis(uploaded_file)
-                st.session_state.initial_script = ""
-                st.session_state.edited_script = ""
-                st.session_state.audio_bytes = None
 
 # DISPLAY SECTION (Check Session State instead of local variable)
 if st.session_state.raw_content:
@@ -208,7 +207,7 @@ if st.session_state.raw_content:
         st.write(st.session_state.raw_content)
 
     # --- Generate Podcast Button ---
-    if st.button("🎙️ Generate Podcast"):
+    if st.button("🎙️ Generate Script for Podcast"):
         # 1. Script Generation
         with st.spinner("Writing Script..."):
             st.session_state.initial_script = generate_script(st.session_state.raw_content)
@@ -232,7 +231,7 @@ if st.session_state.raw_content:
             st.session_state.edited_script = st.text_area("Script Editor", value=st.session_state.initial_script, height=300, max_chars=4000, help="The script cannot exceed 4000 characters to manage audio generation costs.")
         
         # 4. Audio Generation
-        if st.button("Generate Audio"):
+        if st.button("Generate Audio for Podcast"):
             if not st.session_state.edited_script.strip():
                 st.error("Script is empty!")
             else:
