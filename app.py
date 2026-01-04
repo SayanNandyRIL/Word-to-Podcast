@@ -248,8 +248,8 @@ if st.session_state.raw_content:
 
     # --- Generate Podcast Button ---
     if st.button("🎙️ Generate Script for Podcast"):
-        # 1. Script Generation
-        with st.spinner("Writing Script..."):
+        # 1. Script Generation (Passing Custom Names)
+        with st.spinner("Writing Script for {s1_name} and {s2_name}..."):
             st.session_state.initial_script = generate_script(st.session_state.raw_content, s1_name, s2_name)
             st.session_state.audio_bytes = None # Reset audio if script changes
 
@@ -270,7 +270,7 @@ if st.session_state.raw_content:
         if st.button("Reset Script"): 
             st.session_state.edited_script = st.text_area("Script Editor", value=st.session_state.initial_script, height=300, max_chars=4000, help="The script cannot exceed 4000 characters to manage audio generation costs.")
         
-        # 4. Audio Generation
+        # 4. Audio Generation (Passing Custom Names and Voice Type)
         if st.button("Generate Audio for Podcast"):
             if not st.session_state.edited_script.strip():
                 st.error("Script is empty!")
