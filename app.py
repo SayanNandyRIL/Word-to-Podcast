@@ -210,7 +210,10 @@ def generate_audio(script_text, name1, voice1, name2, voice2):
 
                     # Convert bytes to audio segment
                     audio_chunk = AudioSegment.from_file(BytesIO(response.content), format="mp3")
-                    combined_audio += audio_chunk + AudioSegment.silent(duration=150) # 150ms pause
+                    # Narrative Pacing: 
+                    # If Narrator speaks, add longer pause (500ms). If friends speak, shorter (150ms).
+                    pause_duration = 600 if "Narrator" in speaker_found else 150
+                    combined_audio += audio_chunk + AudioSegment.silent(duration=pause_duration)
                     chunks_generated += 1
 
                 except Exception as e:
