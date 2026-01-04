@@ -222,7 +222,7 @@ elif source_type == "Upload Image":
 # --- Generate Podcast Button ---
 if raw_content:
     if st.button("🎙️ Generate Podcast"):
-        
+        st.text_area("Script", raw_content, height=300)
         # 1. Script Generation
         with st.spinner("🤖 Writing Hinglish Script..."):
             script = generate_script(raw_content)
