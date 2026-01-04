@@ -26,6 +26,35 @@ if "audio_bytes" not in st.session_state:
 
 # Sidebar
 api_key = st.sidebar.text_input("Enter OpenAI API Key", type="password")
+
+st.divider()
+    st.subheader("🗣️ Speaker Configuration")
+    
+    # Speaker 1 Config
+    col1, col2 = st.columns(2)
+    with col1:
+        s1_name = st.text_input("Speaker 1", value="Rahul")
+    with col2:
+        s1_voice_label = st.selectbox("Voice 1", ["Male (Deep)", "Male (Neutral)", "Female (Energetic)", "Female (Calm)"], index=0)
+
+    # Speaker 2 Config
+    col3, col4 = st.columns(2)
+    with col3:
+        s2_name = st.text_input("Speaker 2", value="Priya")
+    with col4:
+        s2_voice_label = st.selectbox("Voice 2", ["Male (Deep)", "Male (Neutral)", "Female (Energetic)", "Female (Calm)"], index=2)
+
+    # Map Labels to OpenAI Voice IDs
+    voice_lookup = {
+        "Male (Deep)": "onyx",
+        "Male (Neutral)": "echo",
+        "Female (Energetic)": "nova",
+        "Female (Calm)": "shimmer"
+    }
+    
+    s1_voice_id = voice_lookup[s1_voice_label]
+    s2_voice_id = voice_lookup[s2_voice_label]
+
 if not api_key:
     st.warning("Please enter your OpenAI API Key in the sidebar.")
     st.stop()
@@ -87,19 +116,17 @@ def generate_script(content_text):
     You are a scriptwriter for a candid, funny Indian podcast. 
     Create a conversation between **Sayan** (energetic, cracks jokes) and **Suchi** (smart, sarcastic).
     
-    **Content Source:** 
+    **CRITICAL INSTRUCTIONS:**
+    1. Language: Hinglish (Hindi + English).
+    2. Fillers: Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
+    3. Laughter: Write "Ha ha ha" or "He he" where appropriate.
+    4. Tone: Natural, interruptive, casual.
+    5. Length: Keep it around 250-300 words total.
+    6. Format: **Strictly** use "{name1}: Dialogue" and "{name2}: Dialogue".
+
+    **Source Material:** 
     {content_text[:4000]}  # Limiting text length
     
-    **CRITICAL INSTRUCTIONS:**
-    1. **Language:** Hinglish (Hindi + English).
-    2. **Fillers:** Use words like: "Umm...", "Achcha?", "Matlab...", "Arre yaar", "You know?", "Haa correct".
-    3. **Laughter:** Write "Ha ha ha" or "He he" where appropriate.
-    4. **Tone:** Natural, interruptive, casual.
-    5. **Length:** Keep it around 250-300 words total.
-    
-    **Format:**
-    Sayan: Dialogue...
-    Suchi: Dialogue...
     """
 
     response = client.chat.completions.create(
@@ -113,7 +140,7 @@ def generate_script(content_text):
 def generate_audio(script_text):
     lines = script_text.strip().split('\n')
     combined_audio = AudioSegment.empty()
-    voice_map = {"Sayan": "onyx", "Suchi": "nova"}
+    voice_map = {name1: voice1, name2: voice2}
     
     # Track if we actually generated any audio
     chunks_generated = 0
@@ -123,17 +150,28 @@ def generate_audio(script_text):
     status_text = st.empty()
     
     for i, line in enumerate(lines):
-        # Regex to find "Name: Text"
-        match = re.match(r"^(Sayan|Suchi):\s*(.*)", line, re.IGNORECASE)
+        # Dynamic Regex: Matches "Name1:" or "Name2:" (Case Insensitive)
+        # We use re.escape to handle names with special chars safely
+        pattern = rf"^({re.escape(name1)}|{re.escape(name2)}):\s*(.*)"
+        match = re.match(pattern, line, re.IGNORECASE)
+
         if match:
             speaker, text = match.groups()
             clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
+
+            # Resolve speaker name (Handle case differences e.g. "rahul" vs "Rahul")
+            # We check which key in voice_map matches the found speaker string (case-insensitive)
+            current_voice = "alloy" # Default
+            for name_key, voice_val in voice_map.items():
+                if name_key.lower() == speaker_found.lower():
+                    current_voice = voice_val
+                    break
 
             if clean_text:
                 status_text.text(f"Generating audio for {speaker}...")
                 try:
                     response = client.audio.speech.create(model="tts-1", voice=voice_map.get(speaker, "alloy"), input=clean_text)
-            # Debug: Check if OpenAI returned data
+                    # Debug: Check if OpenAI returned data
                     if not response.content:
                         st.error("OpenAI API returned empty audio content.")
                         continue
