@@ -167,7 +167,11 @@ def generate_script(content_text, name1, name2):
 def generate_audio(script_text, name1, voice1, name2, voice2):
     lines = script_text.strip().split('\n')
     combined_audio = AudioSegment.empty()
-    voice_map = {name1: voice1, name2: voice2}
+    voice_map = {
+        name1: voice1, 
+        name2: voice2, 
+        "Narrator": "alloy" # Neutral voice for context
+    }
     
     # Track if we actually generated any audio
     chunks_generated = 0
@@ -179,12 +183,13 @@ def generate_audio(script_text, name1, voice1, name2, voice2):
     for i, line in enumerate(lines):
         # Dynamic Regex: Matches "Name1:" or "Name2:" (Case Insensitive)
         # We use re.escape to handle names with special chars safely
-        pattern = rf"^({re.escape(name1)}|{re.escape(name2)}):\s*(.*)"
+        pattern = rf"^({re.escape(name1)}|{re.escape(name2)}|Narrator):\s*(.*)"
         match = re.match(pattern, line, re.IGNORECASE)
 
         if match:
             speaker_found, text = match.groups()
-            clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
+            # clean_text = re.sub(r'\((.*?)\)', '', text).strip() # Remove (actions)
+            clean_text = text.strip()
 
             # Resolve speaker name (Handle case differences e.g. "sayan" vs "Sayan")
             # We check which key in voice_map matches the found speaker string (case-insensitive)
