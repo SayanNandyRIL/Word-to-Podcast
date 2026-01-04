@@ -188,7 +188,7 @@ if source_type == "Wikipedia Topic":
         with st.spinner("Searching Wikipedia..."):
             raw_content = get_wiki_content(topic)
             if raw_content:
-                st.success("✅ Content Found!")
+                st.success("✅ Content Found for '" + topic + "'!")
                 st.expander("View Content").write(raw_content)
 
 elif source_type == "Upload Document (PDF/DOCX)":
